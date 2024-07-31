@@ -1,0 +1,32 @@
+services:
+  app:
+    container_name: ${APP_CONTAINER_NAME}
+    build:
+      context: .
+      dockerfile: ./docker/go/Dockerfile
+    volumes:
+      - "./app:/usr/local/go/src/web/app"
+      - ".env:/usr/local/go/src/web/app/.env"
+    tty: true
+    depends_on:
+      - db
+    ports:
+      - "${APP_PORT}:8080"
+  
+  db:
+    container_name: ${DB_HOST}
+    build:
+      context: .
+      dockerfile: ./docker/db/Dockerfile
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - "db-store:/var/lib/postgresql/data"
+      - "./app/database/init:/docker-entrypoint-initdb.d"
+    ports:
+      - "${DB_PORT}:5432"
+
+volumes:
+  db-store:
